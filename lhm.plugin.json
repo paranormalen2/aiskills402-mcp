@@ -1,0 +1,94 @@
+{
+  "author": "Georgi Kalchev (https://aiskills402.com/about)",
+  "cloudEndpoint": "https://mcp.aiskills402.com/mcp",
+  "description": "Search tested AI agent skill files (SKILL.md, Agent Skills format) for free; buy a file once over x402 for cents in USDC on Base and keep it forever. Remote MCP server, no API key.",
+  "homepage": "https://aiskills402.com",
+  "identifier": "aiskills402-mcp",
+  "name": "AISkills402",
+  "prompts": [],
+  "resources": [],
+  "tools": [
+    {
+      "name": "search_skills",
+      "description": "Search the tested agent skill files for sale (free). Give a plain-language query (for example: sound less like ChatGPT), or filter by category, tag or language, or combine them. With a query the results come ranked by relevance; without one you get the featured skills first. Each card has match_reason (the field that matched, or the filter), price_usd (a one-time purchase of the SKILL.md file, yours forever), what it is for, what it is not for, and how it was tested. limit is at most 24.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "category": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 24
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_categories",
+      "description": "List the twelve skill categories (free) with a short introduction and how many skills are listed in each. Use a slug as the category filter of search_skills.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_skill",
+      "description": "Get one skill card (free) plus the exact x402 payment_required body for its one-time purchase of the SKILL.md file, and how_to_buy. Price is price_usd on the card. Buying is over HTTP; MCP does not take payments.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "redownload_skill",
+      "description": "Re-download the SKILL.md file you already bought (free), using the token from your purchase receipt. Always returns the current version of the skill.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ],
+  "version": "1.1.0"
+}
