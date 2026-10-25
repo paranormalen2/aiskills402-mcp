@@ -10,83 +10,954 @@
   "tools": [
     {
       "name": "search_skills",
+      "title": "Search skills",
       "description": "Search the tested agent skill files for sale (free). Give a plain-language query (for example: sound less like ChatGPT), or filter by category, tag or language, or combine them. With a query the results come ranked by relevance; without one you get the featured skills first. Each card has match_reason (the field that matched, or the filter), price_usd (a one-time purchase of the SKILL.md file, yours forever), what it is for, what it is not for, and how it was tested. limit is at most 24.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "query": {
+            "description": "Plain-language search text, for example 'sound less like ChatGPT'. At most 100 characters. Omit it to get the featured skills first instead of a ranked search.",
             "type": "string",
             "maxLength": 100
           },
           "category": {
+            "description": "Only skills in this category. One of: writing, editing, marketing, seo, research, code, agents, sales-support, business, data, translation, education (see list_categories). Any other value is an error.",
             "type": "string"
           },
           "tag": {
+            "description": "Only skills with this tag: lowercase letters, digits and hyphens, at most 32 characters, for example 'humanize'.",
             "type": "string"
           },
           "language": {
+            "description": "Only skills that work in this language: a 2-3 letter code such as en, bg or de, or 'any'. Skills marked 'any' always match.",
             "type": "string"
           },
           "limit": {
+            "description": "How many skills to return, 1 to 24. Default 24.",
             "type": "integer",
             "minimum": 1,
             "maximum": 24
           }
-        },
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      },
+      "annotations": {
+        "title": "Search skills",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
       },
       "execution": {
         "taskSupport": "forbidden"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "payment": {
+            "anyOf": [
+              {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Payment summary shared by the skills (same as each card's payment); null when nothing matched."
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string",
+                  "description": "Stable identifier of the skill; use it with get_skill."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Display name."
+                },
+                "version": {
+                  "type": "string",
+                  "description": "Current semantic version of the SKILL.md file."
+                },
+                "updated_at": {
+                  "type": "string",
+                  "description": "ISO 8601 time of the last update."
+                },
+                "use_when": {
+                  "type": "string",
+                  "description": "What the skill is for."
+                },
+                "not_for": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "What the skill is not for; null if not stated."
+                },
+                "languages": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Language codes the skill works in, or 'any'."
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Lowercase tags."
+                },
+                "category": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Category slug; null if the skill has no category yet."
+                },
+                "category_url": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Page of the category; null if there is no category."
+                },
+                "keywords": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Search keywords."
+                },
+                "faq": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "q": {
+                        "type": "string"
+                      },
+                      "a": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "q",
+                      "a"
+                    ],
+                    "additionalProperties": {}
+                  },
+                  "description": "Questions and answers about the skill."
+                },
+                "examples": {
+                  "type": "array",
+                  "items": {},
+                  "description": "Before/after examples from the test."
+                },
+                "page_url": {
+                  "type": "string",
+                  "description": "Public page of the skill."
+                },
+                "markdown_url": {
+                  "type": "string",
+                  "description": "The same page as Markdown."
+                },
+                "image_url": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Preview image; null if none."
+                },
+                "related_url": {
+                  "type": "string",
+                  "description": "API address of the related skills."
+                },
+                "purchases_count": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Number of purchases; null until there are at least 10."
+                },
+                "tested": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "How the skill was tested; null if not recorded."
+                },
+                "price_usd": {
+                  "type": "string",
+                  "description": "One-time price in US dollars, as a decimal string."
+                },
+                "price_micro": {
+                  "type": "number",
+                  "description": "The same price in millionths of a dollar."
+                },
+                "size_bytes": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Size of the SKILL.md file in bytes."
+                },
+                "sha256": {
+                  "type": "string",
+                  "description": "SHA-256 of the file, lowercase hex."
+                },
+                "outline": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Headings of the file."
+                },
+                "license": {
+                  "type": "object",
+                  "properties": {
+                    "summary": {
+                      "type": "string",
+                      "description": "The license in one sentence."
+                    },
+                    "holder": {
+                      "type": "string",
+                      "description": "Who holds the rights."
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "Page with the full license text."
+                    }
+                  },
+                  "required": [
+                    "summary",
+                    "holder",
+                    "url"
+                  ],
+                  "additionalProperties": {}
+                },
+                "buy_url": {
+                  "type": "string",
+                  "description": "HTTP address to buy the file (x402)."
+                },
+                "redownload_url_template": {
+                  "type": "string",
+                  "description": "HTTP address template of the free re-download; {token} is the receipt token."
+                },
+                "mcp_tool": {
+                  "type": "null",
+                  "description": "Always null: buying is over HTTP, not MCP."
+                },
+                "payment": {
+                  "type": "object",
+                  "properties": {
+                    "protocol": {
+                      "type": "string",
+                      "description": "Always 'x402'."
+                    },
+                    "scheme": {
+                      "type": "string",
+                      "description": "x402 scheme, 'exact'."
+                    },
+                    "asset": {
+                      "type": "string",
+                      "description": "Payment asset, 'USDC'."
+                    },
+                    "selling": {
+                      "type": "boolean",
+                      "description": "Whether the shop is open for payments right now."
+                    }
+                  },
+                  "required": [
+                    "protocol",
+                    "scheme",
+                    "asset",
+                    "selling"
+                  ],
+                  "additionalProperties": {},
+                  "description": "Short payment summary: protocol, asset, network and whether selling is open."
+                },
+                "match_reason": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The field that matched the query (or the filter); null if there is no query or filter."
+                }
+              },
+              "required": [
+                "slug",
+                "name",
+                "version",
+                "updated_at",
+                "use_when",
+                "not_for",
+                "languages",
+                "tags",
+                "category",
+                "category_url",
+                "keywords",
+                "faq",
+                "examples",
+                "page_url",
+                "markdown_url",
+                "image_url",
+                "related_url",
+                "purchases_count",
+                "tested",
+                "price_usd",
+                "price_micro",
+                "size_bytes",
+                "sha256",
+                "outline",
+                "license",
+                "buy_url",
+                "redownload_url_template",
+                "mcp_tool",
+                "payment",
+                "match_reason"
+              ],
+              "additionalProperties": {}
+            },
+            "description": "Matching skill cards, best first. Empty when nothing matched."
+          }
+        },
+        "required": [
+          "payment",
+          "skills"
+        ],
+        "additionalProperties": false
       }
     },
     {
       "name": "list_categories",
+      "title": "List skill categories",
       "description": "List the twelve skill categories (free) with a short introduction and how many skills are listed in each. Use a slug as the category filter of search_skills.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
-        "properties": {},
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "properties": {}
+      },
+      "annotations": {
+        "title": "List skill categories",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
       },
       "execution": {
         "taskSupport": "forbidden"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string",
+                  "description": "Category slug; use it as the category filter of search_skills."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Display name."
+                },
+                "position": {
+                  "type": "number",
+                  "description": "Order in the list, starting at 1."
+                },
+                "intro": {
+                  "type": "string",
+                  "description": "Short introduction to the category."
+                },
+                "keywords": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Category keywords."
+                },
+                "listed_count": {
+                  "type": "number",
+                  "description": "How many skills are listed in the category."
+                },
+                "url": {
+                  "type": "string",
+                  "description": "Public page of the category."
+                }
+              },
+              "required": [
+                "slug",
+                "name",
+                "position",
+                "intro",
+                "keywords",
+                "listed_count",
+                "url"
+              ],
+              "additionalProperties": {}
+            },
+            "description": "All skill categories, in display order."
+          }
+        },
+        "required": [
+          "categories"
+        ],
+        "additionalProperties": false
       }
     },
     {
       "name": "get_skill",
+      "title": "Get a skill and its price",
       "description": "Get one skill card (free) plus the exact x402 payment_required body for its one-time purchase of the SKILL.md file, and how_to_buy. Price is price_usd on the card. Buying is over HTTP; MCP does not take payments.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "slug": {
-            "type": "string"
+            "type": "string",
+            "description": "The skill's slug, as returned by search_skills (for example 'humanize'). An unknown or unlisted slug is an error."
           }
         },
         "required": [
           "slug"
-        ],
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        ]
+      },
+      "annotations": {
+        "title": "Get a skill and its price",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
       },
       "execution": {
         "taskSupport": "forbidden"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Stable identifier of the skill; use it with get_skill."
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name."
+          },
+          "version": {
+            "type": "string",
+            "description": "Current semantic version of the SKILL.md file."
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "ISO 8601 time of the last update."
+          },
+          "use_when": {
+            "type": "string",
+            "description": "What the skill is for."
+          },
+          "not_for": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What the skill is not for; null if not stated."
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Language codes the skill works in, or 'any'."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Lowercase tags."
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Category slug; null if the skill has no category yet."
+          },
+          "category_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Page of the category; null if there is no category."
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Search keywords."
+          },
+          "faq": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "q": {
+                  "type": "string"
+                },
+                "a": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "q",
+                "a"
+              ],
+              "additionalProperties": {}
+            },
+            "description": "Questions and answers about the skill."
+          },
+          "examples": {
+            "type": "array",
+            "items": {},
+            "description": "Before/after examples from the test."
+          },
+          "page_url": {
+            "type": "string",
+            "description": "Public page of the skill."
+          },
+          "markdown_url": {
+            "type": "string",
+            "description": "The same page as Markdown."
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Preview image; null if none."
+          },
+          "related_url": {
+            "type": "string",
+            "description": "API address of the related skills."
+          },
+          "purchases_count": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Number of purchases; null until there are at least 10."
+          },
+          "tested": {
+            "anyOf": [
+              {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How the skill was tested; null if not recorded."
+          },
+          "price_usd": {
+            "type": "string",
+            "description": "One-time price in US dollars, as a decimal string."
+          },
+          "price_micro": {
+            "type": "number",
+            "description": "The same price in millionths of a dollar."
+          },
+          "size_bytes": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Size of the SKILL.md file in bytes."
+          },
+          "sha256": {
+            "type": "string",
+            "description": "SHA-256 of the file, lowercase hex."
+          },
+          "outline": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Headings of the file."
+          },
+          "license": {
+            "type": "object",
+            "properties": {
+              "summary": {
+                "type": "string",
+                "description": "The license in one sentence."
+              },
+              "holder": {
+                "type": "string",
+                "description": "Who holds the rights."
+              },
+              "url": {
+                "type": "string",
+                "description": "Page with the full license text."
+              }
+            },
+            "required": [
+              "summary",
+              "holder",
+              "url"
+            ],
+            "additionalProperties": {}
+          },
+          "buy_url": {
+            "type": "string",
+            "description": "HTTP address to buy the file (x402)."
+          },
+          "redownload_url_template": {
+            "type": "string",
+            "description": "HTTP address template of the free re-download; {token} is the receipt token."
+          },
+          "mcp_tool": {
+            "type": "null",
+            "description": "Always null: buying is over HTTP, not MCP."
+          },
+          "payment": {
+            "type": "object",
+            "properties": {
+              "protocol": {
+                "type": "string",
+                "description": "Always 'x402'."
+              },
+              "scheme": {
+                "type": "string",
+                "description": "x402 scheme, 'exact'."
+              },
+              "asset": {
+                "type": "string",
+                "description": "Payment asset, 'USDC'."
+              },
+              "selling": {
+                "type": "boolean",
+                "description": "Whether the shop is open for payments right now."
+              }
+            },
+            "required": [
+              "protocol",
+              "scheme",
+              "asset",
+              "selling"
+            ],
+            "additionalProperties": {},
+            "description": "Short payment summary: protocol, asset, network and whether selling is open."
+          },
+          "payment_required": {
+            "type": "object",
+            "properties": {
+              "x402Version": {
+                "type": "number",
+                "description": "x402 protocol version, 2."
+              },
+              "accepts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": {}
+                },
+                "description": "Payment requirements to sign; sign accepts[0]."
+              }
+            },
+            "required": [
+              "x402Version",
+              "accepts"
+            ],
+            "additionalProperties": {},
+            "description": "The exact body the HTTP shop answers with HTTP 402; the client signs it. Buying is over HTTP."
+          },
+          "how_to_buy": {
+            "type": "string",
+            "description": "Steps to buy over HTTP."
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "version",
+          "updated_at",
+          "use_when",
+          "not_for",
+          "languages",
+          "tags",
+          "category",
+          "category_url",
+          "keywords",
+          "faq",
+          "examples",
+          "page_url",
+          "markdown_url",
+          "image_url",
+          "related_url",
+          "purchases_count",
+          "tested",
+          "price_usd",
+          "price_micro",
+          "size_bytes",
+          "sha256",
+          "outline",
+          "license",
+          "buy_url",
+          "redownload_url_template",
+          "mcp_tool",
+          "payment",
+          "payment_required",
+          "how_to_buy"
+        ],
+        "additionalProperties": false
       }
     },
     {
       "name": "redownload_skill",
+      "title": "Re-download a bought skill",
       "description": "Re-download the SKILL.md file you already bought (free), using the token from your purchase receipt. Always returns the current version of the skill.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "token": {
-            "type": "string"
+            "type": "string",
+            "description": "The re-download token from your purchase receipt (the 'redownload' part): 64 lowercase hex characters. Not your payment signature."
           }
         },
         "required": [
           "token"
-        ],
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        ]
+      },
+      "annotations": {
+        "title": "Re-download a bought skill",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
       },
       "execution": {
         "taskSupport": "forbidden"
+      },
+      "outputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true,
+            "description": "Always true on success."
+          },
+          "skill": {
+            "type": "string",
+            "description": "Slug of the skill."
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name."
+          },
+          "version": {
+            "type": "string",
+            "description": "The current version being delivered (may be newer than the one first bought)."
+          },
+          "sha256": {
+            "type": "string",
+            "description": "SHA-256 of the delivered file, lowercase hex."
+          },
+          "bytes": {
+            "type": "number",
+            "description": "Size of the file in bytes."
+          },
+          "license": {
+            "type": "object",
+            "properties": {
+              "summary": {
+                "type": "string",
+                "description": "The license in one sentence."
+              },
+              "holder": {
+                "type": "string",
+                "description": "Who holds the rights."
+              },
+              "url": {
+                "type": "string",
+                "description": "Page with the full license text."
+              }
+            },
+            "required": [
+              "summary",
+              "holder",
+              "url"
+            ],
+            "additionalProperties": {}
+          },
+          "file": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "File name, 'SKILL.md'."
+              },
+              "encoding": {
+                "type": "string",
+                "description": "Text encoding of content, 'utf-8'."
+              },
+              "content": {
+                "type": "string",
+                "description": "The full SKILL.md text."
+              }
+            },
+            "required": [
+              "name",
+              "encoding",
+              "content"
+            ],
+            "additionalProperties": {},
+            "description": "The file itself."
+          },
+          "install": {
+            "type": "object",
+            "properties": {
+              "claude_code": {
+                "type": "string",
+                "description": "Where to put the file for Claude Code."
+              },
+              "generic": {
+                "type": "string",
+                "description": "The folder layout for any Agent Skills client."
+              }
+            },
+            "required": [
+              "claude_code",
+              "generic"
+            ],
+            "additionalProperties": {},
+            "description": "Where to install the file."
+          },
+          "changelog": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What changed in this version; null if not recorded."
+          },
+          "purchase": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "description": "Purchase state, for example 'active' or 'pending' (payment settlement not yet confirmed)."
+              },
+              "downloads": {
+                "type": "number",
+                "description": "How many times the file has been delivered, including this call."
+              }
+            },
+            "required": [
+              "status",
+              "downloads"
+            ],
+            "additionalProperties": {},
+            "description": "Your purchase record."
+          }
+        },
+        "required": [
+          "ok",
+          "skill",
+          "name",
+          "version",
+          "sha256",
+          "bytes",
+          "license",
+          "file",
+          "install",
+          "changelog",
+          "purchase"
+        ],
+        "additionalProperties": false
       }
     }
   ],
